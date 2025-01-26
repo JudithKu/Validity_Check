@@ -23,8 +23,6 @@ if "can_play_sound" not in st.session_state:
     st.session_state.can_play_sound = True
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
-if "participant_id" not in st.session_state:
-    st.session_state.participant_id = 1
 if "age" not in st.session_state:
     st.session_state.age = None
 if "gender" not in st.session_state:
@@ -32,7 +30,7 @@ if "gender" not in st.session_state:
 
 # Function to save results as downloadable file
 def save_results():
-    output_file = f"results_vp_{st.session_state.participant_id:02d}.csv"
+    output_file = f"results_vp_{st.session_state.vp_number}.csv"
     results_df = pd.DataFrame(
         st.session_state.results, columns=["Filename", "Valence", "Arousal", "Age", "Gender"]
     )
@@ -48,14 +46,28 @@ def save_results():
     st.success("Results are ready to download!")
 
 # Start the experiment
-st.title("Valence-Arousal Experiment")
+st.title("Wor(l)d of Emotions")
+
+# Introduction section
+st.subheader("Introduction")
+st.write("Thank you for participating! Your task is to listen to the fanatical words and classify them in terms of their “valence” and “arousal”. You will be given a small picture where these characteristics are visualized. Please move the slider to the appropriate value. Afterwards, please press Submit twice and then you can listen to the next word. There are 120 words in total.")
 
 if st.session_state.vp_number is None:
-    st.session_state.vp_number = f"VP_{st.session_state.participant_id:02d}"
+    vp_number = st.text_input("Enter your given VP number (if you didn't get any please contact me):", key="vp_number_input")
 
-if st.session_state.age is None or st.session_state.gender is None:
+    if st.button("Confirm VP Number"):
+        if vp_number.strip():
+            st.session_state.vp_number = vp_number.strip()
+        else:
+            st.error("Please enter a valid VP number.")
+
+if st.session_state.vp_number and (st.session_state.age is None or st.session_state.gender is None):
     age = st.text_input("Enter your age:", key="age_input")
-    gender = st.text_input("Enter your gender:", key="gender_input")
+    gender = st.selectbox(
+        "Select your gender:",
+        ["Male", "Female", "Divers", "I do not want to specify"],
+        key="gender_input"
+    )
 
     if st.button("Start Experiment"):
         if age and gender:
@@ -66,7 +78,8 @@ if st.session_state.age is None or st.session_state.gender is None:
         else:
             st.error("Please fill in all fields before starting.")
 
-if st.session_state.age and st.session_state.gender:
+
+if st.session_state.vp_number and st.session_state.age and st.session_state.gender:
     st.write(f"Participant ID: {st.session_state.vp_number}")
     st.write(f"Age: {st.session_state.age}, Gender: {st.session_state.gender}")
 
@@ -85,11 +98,11 @@ if st.session_state.age and st.session_state.gender:
         # Display image and sliders for valence and arousal
         if not st.session_state.can_play_sound and not st.session_state.submitted:
             image_path = os.path.join(os.path.dirname(__file__), "Valence_Arousal_Sam.png")
-            st.image(image_path, caption="Instructions for the Experiment", width=300)
-            valence = st.slider("Valence (-1 = very negative, 1 = very positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
-            arousal = st.slider("Arousal (-1 = very calm, 1 = very excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
+            st.image(image_path, caption="Please use this picture to give your opinion", width=400)
+            valence = st.slider("Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
+            arousal = st.slider("Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
 
-            # Submit response
+            # Combined submit button
             if st.button("Submit Response"):
                 st.session_state.results.append([st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender])
                 st.session_state.sound_index += 1
@@ -98,6 +111,5 @@ if st.session_state.age and st.session_state.gender:
                 st.session_state.submitted = True
 
     else:
-        st.write("Experiment finished! Thank you for participating.")
+        st.write("Experiment finished! Thank you for participating.Please download the results (.csv file) and send them to me. That would be great, thank you!")
         save_results()
-        st.session_state.participant_id += 1
