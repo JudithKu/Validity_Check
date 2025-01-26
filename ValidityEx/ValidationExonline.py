@@ -5,7 +5,7 @@ import csv
 import pandas as pd
 
 # Define sound folder and list of sounds
-sound_folder = "./rms_adjust"  # Replace with your folder path
+sound_folder = os.path.join(os.path.dirname(__file__), "rms_adjust")  # Replace with your folder path
 if "sound_files" not in st.session_state:
     st.session_state.sound_files = [f for f in os.listdir(sound_folder) if f.endswith(".wav")]
     random.shuffle(st.session_state.sound_files)
