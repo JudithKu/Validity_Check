@@ -2,11 +2,7 @@ import streamlit as st
 import os
 import random
 import csv
-import pygame
 import pandas as pd
-
-# Initialize pygame mixer for sound playback
-pygame.mixer.init()
 
 # Define sound folder and list of sounds
 sound_folder = "./rms_adjust"  # Replace with your folder path
@@ -33,11 +29,6 @@ if "age" not in st.session_state:
     st.session_state.age = None
 if "gender" not in st.session_state:
     st.session_state.gender = None
-
-# Function to play sound
-def play_sound(file_path):
-    pygame.mixer.music.load(file_path)
-    pygame.mixer.music.play()
 
 # Function to save results as downloadable file
 def save_results():
@@ -85,7 +76,9 @@ if st.session_state.age and st.session_state.gender:
             if st.button("Play Sound"):
                 st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
                 file_path = os.path.join(sound_folder, st.session_state.current_sound)
-                play_sound(file_path)
+                with open(file_path, "rb") as audio_file:
+                    audio_bytes = audio_file.read()
+                    st.audio(audio_bytes, format="audio/wav")
                 st.session_state.can_play_sound = False
                 st.session_state.submitted = False
 
