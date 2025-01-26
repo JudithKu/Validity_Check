@@ -107,7 +107,7 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
             # Display image and sliders for valence and arousal
             if not st.session_state.can_play_sound and not st.session_state.submitted:
                 image_path = os.path.join(os.path.dirname(__file__), "Valence_Arousal_Sam.png")
-                st.image(image_path, caption="Please use this picture to give your opinion", width=300)
+                st.image(image_path, caption="Please use this picture to give your opinion", width=400)
                 valence = st.slider("Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
                 arousal = st.slider("Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
 
