@@ -27,6 +27,8 @@ if "age" not in st.session_state:
     st.session_state.age = None
 if "gender" not in st.session_state:
     st.session_state.gender = None
+if "block_index" not in st.session_state:
+    st.session_state.block_index = 0
 
 # Function to save results as downloadable file
 def save_results():
@@ -50,10 +52,9 @@ st.title("Wor(l)d of Emotions")
 
 # Introduction section
 st.subheader("Introduction")
-st.write("Thank you for participating! Your task is to listen to the fanatical words and classify them in terms of their “valence” and “arousal”. You will be given a small picture where these characteristics are visualized. Please move the slider to the appropriate value. Afterwards, please press Submit twice and then you can listen to the next word. There are 120 words in total.")
-
+st.write("Thank you for participating! Your task is to listen to the fanatical words and classify them in terms of their “valence” and “arousal”. You will be given a small picture where these characteristics are visualized. Please move the slider to the appropriate value. Afterwards, please press Submit twice and then you can listen to the next word. There are in total 120 words, but you have the option to cancel after every block of 20 words. But please make sure to downloas the already rated words.")
 if st.session_state.vp_number is None:
-    vp_number = st.text_input("Enter your given VP number (if you didn't get any please contact me):", key="vp_number_input")
+    vp_number = st.text_input("Enter your given VP number (if you didn't get any please contact me)", key="vp_number_input")
 
     if st.button("Confirm VP Number"):
         if vp_number.strip():
@@ -75,41 +76,57 @@ if st.session_state.vp_number and (st.session_state.age is None or st.session_st
             st.session_state.gender = gender
             st.session_state.results = []
             st.session_state.sound_index = 0
+            st.session_state.block_index = 0
         else:
             st.error("Please fill in all fields before starting.")
-
 
 if st.session_state.vp_number and st.session_state.age and st.session_state.gender:
     st.write(f"Participant ID: {st.session_state.vp_number}")
     st.write(f"Age: {st.session_state.age}, Gender: {st.session_state.gender}")
 
-    # Play sound button
-    if st.session_state.sound_index < len(st.session_state.sound_files):
-        if st.session_state.can_play_sound:
-            if st.button("Play Sound"):
-                st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
-                file_path = os.path.join(sound_folder, st.session_state.current_sound)
-                with open(file_path, "rb") as audio_file:
-                    audio_bytes = audio_file.read()
-                    st.audio(audio_bytes, format="audio/wav")
-                st.session_state.can_play_sound = False
-                st.session_state.submitted = False
+    # Determine block size
+    block_size = 20
+    start_index = st.session_state.block_index * block_size
+    end_index = start_index + block_size
 
-        # Display image and sliders for valence and arousal
-        if not st.session_state.can_play_sound and not st.session_state.submitted:
-            image_path = os.path.join(os.path.dirname(__file__), "Valence_Arousal_Sam.png")
-            st.image(image_path, caption="Please use this picture to give your opinion", width=400)
-            valence = st.slider("Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
-            arousal = st.slider("Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
+    # Play sounds in blocks
+    if start_index < len(st.session_state.sound_files):
+        st.write(f"Block {st.session_state.block_index + 1}")
 
-            # Combined submit button
-            if st.button("Submit Response"):
-                st.session_state.results.append([st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender])
-                st.session_state.sound_index += 1
-                st.session_state.current_sound = None
-                st.session_state.can_play_sound = True
-                st.session_state.submitted = True
+        if st.session_state.sound_index < end_index and st.session_state.sound_index < len(st.session_state.sound_files):
+            if st.session_state.can_play_sound:
+                if st.button("Play Sound"):
+                    st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
+                    file_path = os.path.join(sound_folder, st.session_state.current_sound)
+                    with open(file_path, "rb") as audio_file:
+                        audio_bytes = audio_file.read()
+                        st.audio(audio_bytes, format="audio/wav")
+                    st.session_state.can_play_sound = False
+                    st.session_state.submitted = False
+
+            # Display image and sliders for valence and arousal
+            if not st.session_state.can_play_sound and not st.session_state.submitted:
+                image_path = os.path.join(os.path.dirname(__file__), "Valence_Arousal_Sam.png")
+                st.image(image_path, caption="Please use this picture to give your opinion", width=300)
+                valence = st.slider("Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
+                arousal = st.slider("Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
+
+                # Combined submit button
+                if st.button("Submit Response"):
+                    st.session_state.results.append([st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender])
+                    st.session_state.sound_index += 1
+                    st.session_state.current_sound = None
+                    st.session_state.can_play_sound = True
+                    st.session_state.submitted = True
+
+        else:
+            # End of block
+            if st.button("Continue to Next Block"):
+                st.session_state.block_index += 1
+            if st.button("Finish and Download Results"):
+                st.write("Experiment finished! Thank you for participating.")
+                save_results()
 
     else:
-        st.write("Experiment finished! Thank you for participating.Please download the results (.csv file) and send them to me. That would be great, thank you!")
+        st.write("Experiment finished! Thank you for participating.")
         save_results()
