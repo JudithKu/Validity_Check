@@ -170,8 +170,8 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
 
             # Display images and sliders for valence and arousal
             if not st.session_state.can_play_sound:
-                valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Scale.png")
-                arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Scale.png")
+                valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
+                arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
 
                 st.image(valence_image_path, caption="Valence Scale", width=300)
                 valence = st.slider("Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
