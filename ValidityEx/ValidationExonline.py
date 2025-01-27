@@ -95,8 +95,10 @@ def send_email_with_results():
         server.send_message(message)
         server.quit()
         st.success("Results have been sent via email!")
+    except smtplib.SMTPException as e:
+        st.error(f"Email sending failed: {e}")
     except Exception as e:
-        st.error(f"Error sending email: {e}")
+        st.error(f"An unexpected error occurred while sending email: {e}")
 
 # Start the experiment
 st.title("Wor(l)d of Emotions")
