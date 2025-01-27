@@ -52,7 +52,19 @@ st.title("Wor(l)d of Emotions")
 
 # Introduction section
 st.subheader("Introduction")
-st.write("Thank you for participating! Your task is to listen to the fanatical words and classify them in terms of their “valence” and “arousal”. You will be given a small picture where these characteristics are visualized. Please move the slider to the appropriate value. Afterwards, please press Submit twice and then you can listen to the next word. There are in total 120 words, but you have the option to cancel after every block of 20 words. But please make sure to downloas the already rated words.")
+st.write(
+    """ 
+    Thank you for participating! Your task is to listen to the fanatical words and classify them in terms of their “valence” and “arousal”.
+
+    - When you press Play Sound sound bar appears and you can press the play button to listen to it
+    - You will be given a small picture where these valence and arousal are visualized.
+    - Please move the slider to the appropriate value.
+    - Afterwards, please press Submit Response twice
+
+    There are in total 120 words, but you have the option to cancel after every block of 20 words. Please make sure to download the already rated words before exiting.
+    """
+)
+
 if st.session_state.vp_number is None:
     vp_number = st.text_input("Enter your given VP number (if you didn't get any please contact me)", key="vp_number_input")
 
@@ -81,8 +93,10 @@ if st.session_state.vp_number and (st.session_state.age is None or st.session_st
             st.error("Please fill in all fields before starting.")
 
 if st.session_state.vp_number and st.session_state.age and st.session_state.gender:
-    st.write(f"Participant ID: {st.session_state.vp_number}")
-    st.write(f"Age: {st.session_state.age}, Gender: {st.session_state.gender}")
+    # Only display participant details before the first sound is played
+    if st.session_state.sound_index == 0 and st.session_state.can_play_sound:
+        st.write(f"Participant ID: {st.session_state.vp_number}")
+        st.write(f"Age: {st.session_state.age}, Gender: {st.session_state.gender}")
 
     # Determine block size
     block_size = 20
@@ -102,22 +116,31 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
                         audio_bytes = audio_file.read()
                         st.audio(audio_bytes, format="audio/wav")
                     st.session_state.can_play_sound = False
-                    st.session_state.submitted = False
 
-            # Display image and sliders for valence and arousal
-            if not st.session_state.can_play_sound and not st.session_state.submitted:
-                image_path = os.path.join(os.path.dirname(__file__), "Valence_Arousal_Sam.png")
-                st.image(image_path, caption="Please use this picture to give your opinion", width=350)
+            # Display images and sliders for valence and arousal
+            if not st.session_state.can_play_sound:
+                valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
+                arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
+
+                st.image(valence_image_path, caption="Valence Scale", width=350)
                 valence = st.slider("Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
+
+                st.image(arousal_image_path, caption="Arousal Scale", width=350)
                 arousal = st.slider("Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
 
-                # Combined submit button
+                # Submit response and automatically proceed to the next sound
+                # Nach Einreichen einer Antwort direkt den nächsten Sound laden
                 if st.button("Submit Response"):
-                    st.session_state.results.append([st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender])
+                    st.session_state.results.append([
+                        st.session_state.current_sound, valence, arousal,
+                        st.session_state.age, st.session_state.gender
+                    ])
                     st.session_state.sound_index += 1
                     st.session_state.current_sound = None
                     st.session_state.can_play_sound = True
                     st.session_state.submitted = True
+
+
 
         else:
             # End of block
