@@ -3,6 +3,11 @@ import os
 import random
 import csv
 import pandas as pd
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 
 # Define sound folder and list of sounds
 sound_folder = os.path.join(os.path.dirname(__file__), "rms_adjust")  # Replace with your folder path
@@ -46,6 +51,50 @@ def save_results():
         mime="text/csv",
     )
     st.success("Results are ready to download!")
+
+# Function to send results via email
+def send_email_with_results():
+    sender_email = st.secrets["email"]["sender"]
+    receiver_email = st.secrets["email"]["receiver"]
+    password = st.secrets["email"]["password"]
+
+    # Create CSV file from results
+    output_file = f"results_vp_{st.session_state.vp_number}.csv"
+    results_df = pd.DataFrame(
+        st.session_state.results, columns=["Filename", "Valence", "Arousal", "Age", "Gender"]
+    )
+    results_df.to_csv(output_file, index=False)
+
+    # Email message setup
+    message = MIMEMultipart()
+    message['From'] = sender_email
+    message['To'] = receiver_email
+    message['Subject'] = f"Results for VP {st.session_state.vp_number}"
+
+    body = "Attached are the results of the experiment."
+    message.attach(MIMEText(body, 'plain'))
+
+    # Attach the CSV file
+    with open(output_file, "rb") as attachment:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(attachment.read())
+        encoders.encode_base64(part)
+        part.add_header(
+            'Content-Disposition',
+            f'attachment; filename= {output_file}',
+        )
+        message.attach(part)
+
+    # Send the email
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, password)
+        server.send_message(message)
+        server.quit()
+        st.success("Results have been sent via email!")
+    except Exception as e:
+        st.error(f"Error sending email: {e}")
 
 # Start the experiment
 st.title("Wor(l)d of Emotions")
@@ -119,28 +168,22 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
 
             # Display images and sliders for valence and arousal
             if not st.session_state.can_play_sound:
-                valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
-                arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
+                valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Scale.png")
+                arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Scale.png")
 
-                st.image(valence_image_path, caption="Valence Scale", width=350)
+                st.image(valence_image_path, caption="Valence Scale", width=300)
                 valence = st.slider("Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
 
-                st.image(arousal_image_path, caption="Arousal Scale", width=350)
+                st.image(arousal_image_path, caption="Arousal Scale", width=300)
                 arousal = st.slider("Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
 
                 # Submit response and automatically proceed to the next sound
-                # Nach Einreichen einer Antwort direkt den nächsten Sound laden
                 if st.button("Submit Response"):
-                    st.session_state.results.append([
-                        st.session_state.current_sound, valence, arousal,
-                        st.session_state.age, st.session_state.gender
-                    ])
+                    st.session_state.results.append([st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender])
                     st.session_state.sound_index += 1
                     st.session_state.current_sound = None
                     st.session_state.can_play_sound = True
-                    st.session_state.submitted = True
-
-
+                    st.experimental_rerun()
 
         else:
             # End of block
@@ -149,7 +192,11 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
             if st.button("Finish and Download Results"):
                 st.write("Experiment finished! Thank you for participating.")
                 save_results()
+                if st.button("Send Results via Email"):
+                    send_email_with_results()
 
     else:
         st.write("Experiment finished! Thank you for participating.")
         save_results()
+        if st.button("Send Results via Email"):
+            send_email_with_results()
