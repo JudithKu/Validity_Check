@@ -53,6 +53,7 @@ def save_results():
     st.success("Results are ready to download!")
 
 # Function to send results via email
+# Function to send results via email
 def send_email_with_results():
     sender_email = st.secrets["email"]["sender"]
     receiver_email = st.secrets["email"]["receiver"]
@@ -87,7 +88,8 @@ def send_email_with_results():
 
     # Send the email
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        # Adjust SMTP server and port for Webmail
+        server = smtplib.SMTP('smtp.webmail.example.com', 587)  # Replace with your Webmail SMTP server
         server.starttls()
         server.login(sender_email, password)
         server.send_message(message)
