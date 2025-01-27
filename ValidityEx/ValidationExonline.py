@@ -89,7 +89,7 @@ def send_email_with_results():
     # Send the email
     try:
         # Adjust SMTP server and port for Webmail
-        server = smtplib.SMTP('mail.gxm.net', 587)  # Replace with your Webmail SMTP server
+        server = smtplib.SMTP('mail.gmx.net', 587)
         server.starttls()
         server.login(sender_email, password)
         server.send_message(message)
