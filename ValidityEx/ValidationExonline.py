@@ -179,13 +179,12 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
                 st.image(arousal_image_path, caption="Arousal Scale", width=300)
                 arousal = st.slider("Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
 
-                # Submit response and automatically proceed to the next sound
+                # Submit response and proceed to the next sound
                 if st.button("Submit Response"):
                     st.session_state.results.append([st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender])
                     st.session_state.sound_index += 1
                     st.session_state.current_sound = None
                     st.session_state.can_play_sound = True
-                    st.experimental_rerun()
 
         else:
             # End of block
