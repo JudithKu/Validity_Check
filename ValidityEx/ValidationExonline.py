@@ -167,7 +167,7 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
                 file_path = os.path.join(sound_folder, st.session_state.current_sound)
                 with open(file_path, "rb") as audio_file:
                     audio_bytes = audio_file.read()
-                    st.audio(audio_bytes, format="audio/wav", key=f"audio_{current_sound_key}")
+                    st.audio(audio_bytes, format="audio/wav")
                 st.session_state.can_play_sound = False
 
         if not st.session_state.can_play_sound:
