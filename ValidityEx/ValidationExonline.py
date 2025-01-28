@@ -34,6 +34,8 @@ if "gender" not in st.session_state:
     st.session_state.gender = None
 if "block_index" not in st.session_state:
     st.session_state.block_index = 0
+if "email_status" not in st.session_state:
+    st.session_state.email_status = None  # To track email status during the experiment
 
 # Function to save results as downloadable file
 def save_results():
