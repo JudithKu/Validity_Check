@@ -58,6 +58,7 @@ def send_email_with_results():
     sender_email = st.secrets["email"]["sender"]
     receiver_email = st.secrets["email"]["receiver"]
     password = st.secrets["email"]["password"]
+    username = st.secrets["email"]["username"]
 
     # Create CSV file from results
     output_file = f"results_vp_{st.session_state.vp_number}.csv"
@@ -88,10 +89,9 @@ def send_email_with_results():
 
     # Send the email
     try:
-        # Adjust SMTP server and port for Webmail
-        server = smtplib.SMTP('mail.gmx.net', 587)
-        server.starttls()
-        server.login(sender_email, password)
+        server = smtplib.SMTP('in-v3.mailjet.com', 587)  # Mailjet SMTP server and port
+        server.starttls()  # Use STARTTLS for secure connection
+        server.login(username, password)  # Login with Mailjet credentials
         server.send_message(message)
         server.quit()
         st.success("Results have been sent via email!")
