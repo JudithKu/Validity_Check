@@ -34,8 +34,6 @@ if "gender" not in st.session_state:
     st.session_state.gender = None
 if "block_index" not in st.session_state:
     st.session_state.block_index = 0
-if "email_status" not in st.session_state:
-    st.session_state.email_status = None  # To track email status during the experiment
 
 # Function to save results as downloadable file
 def save_results():
@@ -54,34 +52,7 @@ def save_results():
     )
     st.success("Results are ready to download!")
 
-# Function to send a test email
-def send_test_email():
-    try:
-        sender_email = st.secrets["email"]["sender"]
-        receiver_email = st.secrets["email"]["receiver"]
-        username = st.secrets["email"]["username"]
-        password = st.secrets["email"]["password"]
-
-        message = MIMEMultipart()
-        message['From'] = sender_email
-        message['To'] = receiver_email
-        message['Subject'] = "Test Email: Mailjet Connection"
-
-        body = "This is a test email to verify Mailjet connection."
-        message.attach(MIMEText(body, 'plain'))
-
-        server = smtplib.SMTP('in-v3.mailjet.com', 587)
-        server.starttls()
-        server.login(username, password)
-        server.send_message(message)
-        server.quit()
-        st.session_state.email_status = "success"
-        st.success("Test email sent successfully! SMTP connection is working.")
-    except Exception as e:
-        st.session_state.email_status = f"failed: {e}"
-        st.error(f"Test email failed to send: {e}")
-
-# Function to send results via email
+# Function to send results via email using Mailjet
 def send_email_with_results():
     sender_email = st.secrets["email"]["sender"]
     receiver_email = st.secrets["email"]["receiver"]
@@ -122,24 +93,11 @@ def send_email_with_results():
         server.login(username, password)  # Login with Mailjet credentials
         server.send_message(message)
         server.quit()
-        st.success("Results have been sent via email!")
+        st.success("Results have been sent via email!")  # Success notification
+    except smtplib.SMTPException as e:
+        st.error(f"Email sending failed: {e}")  # Clear error message for SMTP issues
     except Exception as e:
-        st.error(f"An unexpected error occurred while sending email: {e}")
-
-# Start the experiment
-st.title("Wor(l)d of Emotions")
-
-# Test email connection before starting
-if st.session_state.email_status is None:
-    st.info("Testing email connection...")
-    send_test_email()
-
-# Check email connection status
-if st.session_state.email_status == "success":
-    st.success("Email system is operational!")
-elif "failed" in str(st.session_state.email_status):
-    st.error(f"Email system is not working: {st.session_state.email_status}")
-
+        st.error(f"An unexpected error occurred while sending email: {e}")  # General error message
 
 # Start the experiment
 st.title("Wor(l)d of Emotions")
