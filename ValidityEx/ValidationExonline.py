@@ -54,20 +54,25 @@ def save_results():
 
 def send_email_with_results():
     try:
-        # SMTP credentials from Streamlit secrets
+        st.info("Preparing to send email...")  # Zeigt an, dass die Funktion aufgerufen wurde
+
+        # SMTP-Daten aus Streamlit-Secrets laden
         sender_email = st.secrets["email"]["sender"]
         receiver_email = st.secrets["email"]["receiver"]
         username = st.secrets["email"]["username"]
         password = st.secrets["email"]["password"]
 
-        # Create CSV file
+        st.info(f"Sender: {sender_email}, Receiver: {receiver_email}")
+
+        # CSV-Datei erstellen
         output_file = f"results_vp_{st.session_state.vp_number}.csv"
         results_df = pd.DataFrame(
             st.session_state.results, columns=["Filename", "Valence", "Arousal", "Age", "Gender"]
         )
         results_df.to_csv(output_file, index=False)
+        st.info(f"CSV file {output_file} created.")
 
-        # Prepare email
+        # E-Mail vorbereiten
         message = MIMEMultipart()
         message['From'] = sender_email
         message['To'] = receiver_email
@@ -76,7 +81,7 @@ def send_email_with_results():
         body = "Attached are the results of the experiment."
         message.attach(MIMEText(body, 'plain'))
 
-        # Attach CSV file
+        # CSV-Datei anhängen
         with open(output_file, "rb") as attachment:
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(attachment.read())
@@ -86,8 +91,9 @@ def send_email_with_results():
                 f'attachment; filename= {output_file}',
             )
             message.attach(part)
+        st.info("Email message prepared.")
 
-        # Connect to SMTP server and send email
+      # Connect to SMTP server and send email
         server = smtplib.SMTP('in-v3.mailjet.com', 587)
         server.starttls()
         server.login(username, password)
@@ -199,9 +205,20 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
 
     # Button für den E-Mail-Versand
     if st.button("Send Results via Email"):
-        send_email_with_results()
+        try:
+            st.info("Sending results via email...")
+            send_email_with_results()
+        except Exception as e:
+            st.error(f"An error occurred while sending email: {e}")
 
     # Button für den nächsten Block
     if st.button("Continue to Next Block"):
         st.session_state.block_index += 1
         st.session_state.can_play_sound = True  # Reset für den nächsten Block
+
+else:
+    st.write("You have completed all blocks! Thank you for your participation.")
+    save_results()
+
+    if st.button("Send Final Results via Email"):
+        send_email_with_results()
