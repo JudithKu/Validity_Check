@@ -164,25 +164,26 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
         st.write(f"Participant ID: {st.session_state.vp_number}")
         st.write(f"Age: {st.session_state.age}, Gender: {st.session_state.gender}")
 
-    # Determine block size
+if st.session_state.block_index < len(st.session_state.sound_files) // block_size:
+    # Block-Größe und Start/End-Index berechnen
     block_size = 20
     start_index = st.session_state.block_index * block_size
     end_index = start_index + block_size
 
- # Play sounds in blocks
-if start_index < len(st.session_state.sound_files):
+    # Block-Header
     st.write(f"Block {st.session_state.block_index + 1}")
 
-    # Sound abspielen und Bewertung vornehmen
-    if st.session_state.sound_index < end_index and st.session_state.sound_index < len(st.session_state.sound_files):
-        if st.session_state.can_play_sound:
-            if st.button("Play Sound"):
-                st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
-                file_path = os.path.join(sound_folder, st.session_state.current_sound)
-                with open(file_path, "rb") as audio_file:
-                    audio_bytes = audio_file.read()
-                    st.audio(audio_bytes, format="audio/wav")
-                st.session_state.can_play_sound = False
+    # Abspielen der Sounds im aktuellen Block
+    if start_index < len(st.session_state.sound_files):
+        if st.session_state.sound_index < end_index:
+            if st.session_state.can_play_sound:
+                if st.button("Play Sound"):
+                    st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
+                    file_path = os.path.join(sound_folder, st.session_state.current_sound)
+                    with open(file_path, "rb") as audio_file:
+                        audio_bytes = audio_file.read()
+                        st.audio(audio_bytes, format="audio/wav")
+                    st.session_state.can_play_sound = False
 
         # Slider für Valence und Arousal anzeigen
         if not st.session_state.can_play_sound:
