@@ -8,10 +8,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-
-if st.button("Send Results via Email"):
-    st.info("Button clicked. Sending email...")  # Visuelles Feedback hinzufügen
-    send_email_with_results()
     
 # Define sound folder and list of sounds
 sound_folder = os.path.join(os.path.dirname(__file__), "rms_adjust")  # Replace with your folder path
@@ -210,8 +206,13 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
                 if st.button("Send Results via Email"):
                     send_email_with_results()
 
-    else:
-        st.write("Experiment finished! Thank you for participating.")
-        save_results()
-        if st.button("Send Results via Email"):
+else:
+    st.write("Experiment finished! Thank you for participating.")
+    save_results()
+    if st.button("Send Results via Email"):
+        try:
+            st.info("Button clicked. Sending email...")  # Feedback, dass der Button erkannt wurde
             send_email_with_results()
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {e}")  # Fehler direkt anzeigen
+
