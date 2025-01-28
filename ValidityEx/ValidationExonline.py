@@ -52,52 +52,59 @@ def save_results():
     )
     st.success("Results are ready to download!")
 
-# Function to send results via email using Mailjet
 def send_email_with_results():
-    sender_email = st.secrets["email"]["sender"]
-    receiver_email = st.secrets["email"]["receiver"]
-    username = st.secrets["email"]["username"]
-    password = st.secrets["email"]["password"]
-
-    # Create CSV file from results
-    output_file = f"results_vp_{st.session_state.vp_number}.csv"
-    results_df = pd.DataFrame(
-        st.session_state.results, columns=["Filename", "Valence", "Arousal", "Age", "Gender"]
-    )
-    results_df.to_csv(output_file, index=False)
-
-    # Email message setup
-    message = MIMEMultipart()
-    message['From'] = sender_email
-    message['To'] = receiver_email
-    message['Subject'] = f"Results for VP {st.session_state.vp_number}"
-
-    body = "Attached are the results of the experiment."
-    message.attach(MIMEText(body, 'plain'))
-
-    # Attach the CSV file
-    with open(output_file, "rb") as attachment:
-        part = MIMEBase('application', 'octet-stream')
-        part.set_payload(attachment.read())
-        encoders.encode_base64(part)
-        part.add_header(
-            'Content-Disposition',
-            f'attachment; filename= {output_file}',
-        )
-        message.attach(part)
-
-    # Send the email using Mailjet SMTP
     try:
+        sender_email = st.secrets["email"]["sender"]
+        receiver_email = st.secrets["email"]["receiver"]
+        username = st.secrets["email"]["username"]
+        password = st.secrets["email"]["password"]
+
+        st.info("Preparing email message...")
+        
+        # Create CSV file from results
+        output_file = f"results_vp_{st.session_state.vp_number}.csv"
+        results_df = pd.DataFrame(
+            st.session_state.results, columns=["Filename", "Valence", "Arousal", "Age", "Gender"]
+        )
+        results_df.to_csv(output_file, index=False)
+
+        # Email message setup
+        message = MIMEMultipart()
+        message['From'] = sender_email
+        message['To'] = receiver_email
+        message['Subject'] = f"Results for VP {st.session_state.vp_number}"
+
+        body = "Attached are the results of the experiment."
+        message.attach(MIMEText(body, 'plain'))
+
+        # Attach the CSV file
+        with open(output_file, "rb") as attachment:
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(attachment.read())
+            encoders.encode_base64(part)
+            part.add_header(
+                'Content-Disposition',
+                f'attachment; filename= {output_file}',
+            )
+            message.attach(part)
+
+        st.info("Connecting to SMTP server...")
+        
+        # Send the email using Mailjet SMTP
         server = smtplib.SMTP('in-v3.mailjet.com', 587)  # Mailjet SMTP server and port
         server.starttls()  # Use STARTTLS for secure connection
         server.login(username, password)  # Login with Mailjet credentials
+        
+        st.info("Sending email...")
         server.send_message(message)
         server.quit()
+        
         st.success("Results have been sent via email!")  # Success notification
     except smtplib.SMTPException as e:
         st.error(f"Email sending failed: {e}")  # Clear error message for SMTP issues
     except Exception as e:
         st.error(f"An unexpected error occurred while sending email: {e}")  # General error message
+
 
 # Start the experiment
 st.title("Wor(l)d of Emotions")
