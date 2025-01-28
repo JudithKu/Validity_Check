@@ -49,30 +49,26 @@ def save_results():
         data=csv,
         file_name=output_file,
         mime="text/csv",
+        key="download_results"
     )
     st.success("Results are ready to download!")
 
 def send_email_with_results():
     try:
-        st.info("Preparing to send email...")  # Zeigt an, dass die Funktion aufgerufen wurde
-
-        # SMTP-Daten aus Streamlit-Secrets laden
+        # SMTP credentials from Streamlit secrets
         sender_email = st.secrets["email"]["sender"]
         receiver_email = st.secrets["email"]["receiver"]
         username = st.secrets["email"]["username"]
         password = st.secrets["email"]["password"]
 
-        st.info(f"Sender: {sender_email}, Receiver: {receiver_email}")
-
-        # CSV-Datei erstellen
+        # Create CSV file
         output_file = f"results_vp_{st.session_state.vp_number}.csv"
         results_df = pd.DataFrame(
             st.session_state.results, columns=["Filename", "Valence", "Arousal", "Age", "Gender"]
         )
         results_df.to_csv(output_file, index=False)
-        st.info(f"CSV file {output_file} created.")
 
-        # E-Mail vorbereiten
+        # Prepare email
         message = MIMEMultipart()
         message['From'] = sender_email
         message['To'] = receiver_email
@@ -81,7 +77,7 @@ def send_email_with_results():
         body = "Attached are the results of the experiment."
         message.attach(MIMEText(body, 'plain'))
 
-        # CSV-Datei anhängen
+        # Attach CSV file
         with open(output_file, "rb") as attachment:
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(attachment.read())
@@ -91,9 +87,8 @@ def send_email_with_results():
                 f'attachment; filename= {output_file}',
             )
             message.attach(part)
-        st.info("Email message prepared.")
 
-      # Connect to SMTP server and send email
+        # Connect to SMTP server and send email
         server = smtplib.SMTP('in-v3.mailjet.com', 587)
         server.starttls()
         server.login(username, password)
@@ -125,7 +120,7 @@ st.write(
 if st.session_state.vp_number is None:
     vp_number = st.text_input("Enter your given VP number (if you didn't get any please contact me)", key="vp_number_input")
 
-    if st.button("Confirm VP Number"):
+    if st.button("Confirm VP Number", key="confirm_vp_number"):
         if vp_number.strip():
             st.session_state.vp_number = vp_number.strip()
         else:
@@ -139,7 +134,7 @@ if st.session_state.vp_number and (st.session_state.age is None or st.session_st
         key="gender_input"
     )
 
-    if st.button("Start Experiment"):
+    if st.button("Start Experiment", key="start_experiment"):
         if age and gender:
             st.session_state.age = age
             st.session_state.gender = gender
@@ -167,12 +162,12 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
     if start_index < len(st.session_state.sound_files):
         while st.session_state.sound_index < end_index and st.session_state.sound_index < len(st.session_state.sound_files):
             if st.session_state.can_play_sound:
-                if st.button("Play Sound"):
+                if st.button("Play Sound", key=f"play_sound_{st.session_state.sound_index}"):
                     st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
                     file_path = os.path.join(sound_folder, st.session_state.current_sound)
                     with open(file_path, "rb") as audio_file:
                         audio_bytes = audio_file.read()
-                        st.audio(audio_bytes, format="audio/wav")
+                        st.audio(audio_bytes, format="audio/wav", key=f"audio_{st.session_state.sound_index}")
                     st.session_state.can_play_sound = False
 
             if not st.session_state.can_play_sound:
@@ -180,18 +175,18 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
                 valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
                 arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
 
-                st.image(valence_image_path, caption="Valence Scale", width=300)
+                st.image(valence_image_path, caption="Valence Scale", width=300, key=f"valence_image_{st.session_state.sound_index}")
                 valence = st.slider(
                     "Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}"
                 )
 
-                st.image(arousal_image_path, caption="Arousal Scale", width=300)
+                st.image(arousal_image_path, caption="Arousal Scale", width=300, key=f"arousal_image_{st.session_state.sound_index}")
                 arousal = st.slider(
                     "Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}"
                 )
 
                 # Antwort absenden und zum nächsten Sound wechseln
-                if st.button("Submit Response"):
+                if st.button("Submit Response", key=f"submit_response_{st.session_state.sound_index}"):
                     st.session_state.results.append(
                         [st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender]
                     )
@@ -204,16 +199,16 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
     save_results()
 
     # Button für den E-Mail-Versand
-    if st.button("Send Results via Email"):
+    if st.button("Send Results via Email", key="send_results_email"):
         send_email_with_results()
 
     # Button für den nächsten Block
-    if st.button("Continue to Next Block"):
+    if st.button("Continue to Next Block", key="continue_next_block"):
         st.session_state.block_index += 1
         st.session_state.can_play_sound = True  # Reset für den nächsten Block
 else:
     st.write("You have completed all blocks! Thank you for your participation.")
     save_results()
 
-    if st.button("Send Final Results via Email"):
+    if st.button("Send Final Results via Email", key="send_final_results_email"):
         send_email_with_results()
