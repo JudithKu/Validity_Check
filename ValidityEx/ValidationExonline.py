@@ -163,10 +163,9 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
     if st.session_state.sound_index == 0 and st.session_state.can_play_sound:
         st.write(f"Participant ID: {st.session_state.vp_number}")
         st.write(f"Age: {st.session_state.age}, Gender: {st.session_state.gender}")
-
+        
+block_size = 20
 if st.session_state.block_index < len(st.session_state.sound_files) // block_size:
-    # Block-Größe und Start/End-Index berechnen
-    block_size = 20
     start_index = st.session_state.block_index * block_size
     end_index = start_index + block_size
 
