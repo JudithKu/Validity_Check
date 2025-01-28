@@ -158,17 +158,17 @@ if st.session_state.vp_number and st.session_state.age and st.session_state.gend
         st.write(f"Participant ID: {st.session_state.vp_number}")
         st.write(f"Age: {st.session_state.age}, Gender: {st.session_state.gender}")
         
-block_size = 20
+block_size = 20  # Anzahl der Sounds pro Block
 if st.session_state.block_index < len(st.session_state.sound_files) // block_size:
     start_index = st.session_state.block_index * block_size
     end_index = start_index + block_size
 
-    # Block-Header
-    st.write(f"Block {st.session_state.block_index + 1}")
+    # Block-Header anzeigen
+    st.write(f"Block {st.session_state.block_index + 1} of {len(st.session_state.sound_files) // block_size}")
 
-    # Abspielen der Sounds im aktuellen Block
+    # Sounds des aktuellen Blocks abspielen und bewerten
     if start_index < len(st.session_state.sound_files):
-        if st.session_state.sound_index < end_index:
+        while st.session_state.sound_index < end_index and st.session_state.sound_index < len(st.session_state.sound_files):
             if st.session_state.can_play_sound:
                 if st.button("Play Sound"):
                     st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
