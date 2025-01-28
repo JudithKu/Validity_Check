@@ -9,6 +9,10 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
+if st.button("Send Results via Email"):
+    st.info("Button clicked. Sending email...")  # Visuelles Feedback hinzufügen
+    send_email_with_results()
+    
 # Define sound folder and list of sounds
 sound_folder = os.path.join(os.path.dirname(__file__), "rms_adjust")  # Replace with your folder path
 if "sound_files" not in st.session_state:
