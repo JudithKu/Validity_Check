@@ -175,12 +175,12 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
             valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
             arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
 
-            st.image(valence_image_path, caption="Valence Scale", width=300, key=f"valence_image_{current_sound_key}")
+            st.image(valence_image_path, caption="Valence Scale", width=300)
             valence = st.slider(
                 "Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{current_sound_key}"
             )
 
-            st.image(arousal_image_path, caption="Arousal Scale", width=300, key=f"arousal_image_{current_sound_key}")
+            st.image(arousal_image_path, caption="Arousal Scale", width=300)
             arousal = st.slider(
                 "Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{current_sound_key}"
             )
