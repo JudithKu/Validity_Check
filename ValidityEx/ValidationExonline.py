@@ -8,7 +8,12 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-    
+
+server = smtplib.SMTP('in-v3.mailjet.com', 587)
+server.set_debuglevel(1)  # Aktiviert ausführliche Logs
+server.starttls()
+server.login(st.secrets["email"]["username"], st.secrets["email"]["password"])
+
 # Define sound folder and list of sounds
 sound_folder = os.path.join(os.path.dirname(__file__), "rms_adjust")  # Replace with your folder path
 if "sound_files" not in st.session_state:
