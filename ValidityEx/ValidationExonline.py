@@ -55,7 +55,7 @@ def save_results():
 def send_email_with_results():
     try:
         st.info("Preparing to send email...")  # Zeigt an, dass die Funktion aufgerufen wurde
-        
+
         # SMTP-Daten aus Streamlit-Secrets laden
         sender_email = st.secrets["email"]["sender"]
         receiver_email = st.secrets["email"]["receiver"]
@@ -93,20 +93,19 @@ def send_email_with_results():
             message.attach(part)
         st.info("Email message prepared.")
 
-        # Verbindung zu Mailjet herstellen
+        # Verbindung zu Mailjet herstellen und E-Mail senden
         st.info("Connecting to SMTP server...")
         server = smtplib.SMTP('in-v3.mailjet.com', 587)
         server.set_debuglevel(1)  # Aktiviert SMTP-Debugging, zeigt detaillierte Logs
         server.starttls()
         server.login(username, password)
-        
+
         st.info("Sending email...")
         server.send_message(message)
         server.quit()
         st.success("Results have been sent via email!")  # Erfolgsmeldung anzeigen
     except Exception as e:
         st.error(f"An error occurred: {e}")  # Fehlermeldung anzeigen
-
 
 # Start the experiment
 st.title("Wor(l)d of Emotions")
