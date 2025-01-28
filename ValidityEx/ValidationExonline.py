@@ -158,54 +158,55 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
     # Block-Header anzeigen
     st.write(f"Block {st.session_state.block_index + 1} of {len(st.session_state.sound_files) // block_size}")
 
-    # Sounds des aktuellen Blocks abspielen und bewerten
-    if start_index < len(st.session_state.sound_files):
-        while st.session_state.sound_index < end_index and st.session_state.sound_index < len(st.session_state.sound_files):
-            if st.session_state.can_play_sound:
-                if st.button("Play Sound", key=f"play_sound_{st.session_state.sound_index}"):
-                    st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
-                    file_path = os.path.join(sound_folder, st.session_state.current_sound)
-                    with open(file_path, "rb") as audio_file:
-                        audio_bytes = audio_file.read()
-                        st.audio(audio_bytes, format="audio/wav", key=f"audio_{st.session_state.sound_index}")
-                    st.session_state.can_play_sound = False
+    # Aktuellen Sound abspielen und bewerten
+    if st.session_state.sound_index < len(st.session_state.sound_files):
+        current_sound_key = f"sound_{st.session_state.sound_index}"
+        if st.session_state.can_play_sound:
+            if st.button("Play Sound", key=f"play_sound_{current_sound_key}"):
+                st.session_state.current_sound = st.session_state.sound_files[st.session_state.sound_index]
+                file_path = os.path.join(sound_folder, st.session_state.current_sound)
+                with open(file_path, "rb") as audio_file:
+                    audio_bytes = audio_file.read()
+                    st.audio(audio_bytes, format="audio/wav", key=f"audio_{current_sound_key}")
+                st.session_state.can_play_sound = False
 
-            if not st.session_state.can_play_sound:
-                # Slider für Valence und Arousal anzeigen
-                valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
-                arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
+        if not st.session_state.can_play_sound:
+            # Slider für Valence und Arousal anzeigen
+            valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
+            arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
 
-                st.image(valence_image_path, caption="Valence Scale", width=300, key=f"valence_image_{st.session_state.sound_index}")
-                valence = st.slider(
-                    "Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}"
+            st.image(valence_image_path, caption="Valence Scale", width=300, key=f"valence_image_{current_sound_key}")
+            valence = st.slider(
+                "Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{current_sound_key}"
+            )
+
+            st.image(arousal_image_path, caption="Arousal Scale", width=300, key=f"arousal_image_{current_sound_key}")
+            arousal = st.slider(
+                "Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{current_sound_key}"
+            )
+
+            # Antwort absenden und zum nächsten Sound wechseln
+            if st.button("Submit Response", key=f"submit_response_{current_sound_key}"):
+                st.session_state.results.append(
+                    [st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender]
                 )
-
-                st.image(arousal_image_path, caption="Arousal Scale", width=300, key=f"arousal_image_{st.session_state.sound_index}")
-                arousal = st.slider(
-                    "Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}"
-                )
-
-                # Antwort absenden und zum nächsten Sound wechseln
-                if st.button("Submit Response", key=f"submit_response_{st.session_state.sound_index}"):
-                    st.session_state.results.append(
-                        [st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender]
-                    )
-                    st.session_state.sound_index += 1
-                    st.session_state.current_sound = None
-                    st.session_state.can_play_sound = True
+                st.session_state.sound_index += 1
+                st.session_state.current_sound = None
+                st.session_state.can_play_sound = True
 
     # Block abgeschlossen: Ergebnisse anzeigen und Buttons anbieten
-    st.write("You have completed the current block!")
-    save_results()
+    if st.session_state.sound_index == end_index or st.session_state.sound_index == len(st.session_state.sound_files):
+        st.write("You have completed the current block!")
+        save_results()
 
-    # Button für den E-Mail-Versand
-    if st.button("Send Results via Email", key="send_results_email"):
-        send_email_with_results()
+        # Button für den E-Mail-Versand
+        if st.button("Send Results via Email", key=f"send_results_email_block_{st.session_state.block_index}"):
+            send_email_with_results()
 
-    # Button für den nächsten Block
-    if st.button("Continue to Next Block", key="continue_next_block"):
-        st.session_state.block_index += 1
-        st.session_state.can_play_sound = True  # Reset für den nächsten Block
+        # Button für den nächsten Block
+        if st.button("Continue to Next Block", key=f"continue_next_block_{st.session_state.block_index}"):
+            st.session_state.block_index += 1
+            st.session_state.can_play_sound = True  # Reset für den nächsten Block
 else:
     st.write("You have completed all blocks! Thank you for your participation.")
     save_results()
