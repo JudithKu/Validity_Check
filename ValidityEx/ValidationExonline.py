@@ -54,21 +54,25 @@ def save_results():
 
 def send_email_with_results():
     try:
+        st.info("Preparing to send email...")  # Zeigt an, dass die Funktion aufgerufen wurde
+        
+        # SMTP-Daten aus Streamlit-Secrets laden
         sender_email = st.secrets["email"]["sender"]
         receiver_email = st.secrets["email"]["receiver"]
         username = st.secrets["email"]["username"]
         password = st.secrets["email"]["password"]
 
-        st.info("Preparing email message...")
-        
-        # Create CSV file from results
+        st.info(f"Sender: {sender_email}, Receiver: {receiver_email}")
+
+        # CSV-Datei erstellen
         output_file = f"results_vp_{st.session_state.vp_number}.csv"
         results_df = pd.DataFrame(
             st.session_state.results, columns=["Filename", "Valence", "Arousal", "Age", "Gender"]
         )
         results_df.to_csv(output_file, index=False)
+        st.info(f"CSV file {output_file} created.")
 
-        # Email message setup
+        # E-Mail vorbereiten
         message = MIMEMultipart()
         message['From'] = sender_email
         message['To'] = receiver_email
@@ -77,7 +81,7 @@ def send_email_with_results():
         body = "Attached are the results of the experiment."
         message.attach(MIMEText(body, 'plain'))
 
-        # Attach the CSV file
+        # CSV-Datei anhängen
         with open(output_file, "rb") as attachment:
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(attachment.read())
@@ -87,23 +91,21 @@ def send_email_with_results():
                 f'attachment; filename= {output_file}',
             )
             message.attach(part)
+        st.info("Email message prepared.")
 
+        # Verbindung zu Mailjet herstellen
         st.info("Connecting to SMTP server...")
-        
-        # Send the email using Mailjet SMTP
-        server = smtplib.SMTP('in-v3.mailjet.com', 587)  # Mailjet SMTP server and port
-        server.starttls()  # Use STARTTLS for secure connection
-        server.login(username, password)  # Login with Mailjet credentials
+        server = smtplib.SMTP('in-v3.mailjet.com', 587)
+        server.set_debuglevel(1)  # Aktiviert SMTP-Debugging, zeigt detaillierte Logs
+        server.starttls()
+        server.login(username, password)
         
         st.info("Sending email...")
         server.send_message(message)
         server.quit()
-        
-        st.success("Results have been sent via email!")  # Success notification
-    except smtplib.SMTPException as e:
-        st.error(f"Email sending failed: {e}")  # Clear error message for SMTP issues
+        st.success("Results have been sent via email!")  # Erfolgsmeldung anzeigen
     except Exception as e:
-        st.error(f"An unexpected error occurred while sending email: {e}")  # General error message
+        st.error(f"An error occurred: {e}")  # Fehlermeldung anzeigen
 
 
 # Start the experiment
