@@ -54,25 +54,20 @@ def save_results():
 
 def send_email_with_results():
     try:
-        st.info("Preparing to send email...")  # Zeigt an, dass die Funktion aufgerufen wurde
-
-        # SMTP-Daten aus Streamlit-Secrets laden
+        # SMTP credentials from Streamlit secrets
         sender_email = st.secrets["email"]["sender"]
         receiver_email = st.secrets["email"]["receiver"]
         username = st.secrets["email"]["username"]
         password = st.secrets["email"]["password"]
 
-        st.info(f"Sender: {sender_email}, Receiver: {receiver_email}")
-
-        # CSV-Datei erstellen
+        # Create CSV file
         output_file = f"results_vp_{st.session_state.vp_number}.csv"
         results_df = pd.DataFrame(
             st.session_state.results, columns=["Filename", "Valence", "Arousal", "Age", "Gender"]
         )
         results_df.to_csv(output_file, index=False)
-        st.info(f"CSV file {output_file} created.")
 
-        # E-Mail vorbereiten
+        # Prepare email
         message = MIMEMultipart()
         message['From'] = sender_email
         message['To'] = receiver_email
@@ -81,7 +76,7 @@ def send_email_with_results():
         body = "Attached are the results of the experiment."
         message.attach(MIMEText(body, 'plain'))
 
-        # CSV-Datei anhängen
+        # Attach CSV file
         with open(output_file, "rb") as attachment:
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(attachment.read())
@@ -91,21 +86,17 @@ def send_email_with_results():
                 f'attachment; filename= {output_file}',
             )
             message.attach(part)
-        st.info("Email message prepared.")
 
-        # Verbindung zu Mailjet herstellen und E-Mail senden
-        st.info("Connecting to SMTP server...")
+        # Connect to SMTP server and send email
         server = smtplib.SMTP('in-v3.mailjet.com', 587)
-        server.set_debuglevel(1)  # Aktiviert SMTP-Debugging, zeigt detaillierte Logs
         server.starttls()
         server.login(username, password)
-
-        st.info("Sending email...")
         server.send_message(message)
         server.quit()
-        st.success("Results have been sent via email!")  # Erfolgsmeldung anzeigen
+
+        st.success("Email sent successfully!")
     except Exception as e:
-        st.error(f"An error occurred: {e}")  # Fehlermeldung anzeigen
+        st.error("Failed to send email. Please try again later.")
 
 # Start the experiment
 st.title("Wor(l)d of Emotions")
@@ -114,14 +105,14 @@ st.title("Wor(l)d of Emotions")
 st.subheader("Introduction")
 st.write(
     """ 
-    Thank you for participating! Your task is to listen to the fanatical words and classify them in terms of their “valence” and “arousal”.
+    Thank you for participating! Your task is to listen to the fantasy words and classify them in terms of their “valence” and “arousal”.
 
     - When you press Play Sound sound bar appears and you can press the play button to listen to it
     - You will be given a small picture where these valence and arousal are visualized.
     - Please move the slider to the appropriate value.
     - Afterwards, please press Submit Response twice
 
-    There are in total 120 words, but you have the option to cancel after every block of 20 words. Please make sure to download the already rated words before exiting.
+    There are in total 120 words, but you have the option to cancel after every block of 20 words. Please make sure to send the results via E-mail. If you get an error please download the results.
     """
 )
 
@@ -208,15 +199,9 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
 
     # Button für den E-Mail-Versand
     if st.button("Send Results via Email"):
-        try:
-            st.info("Sending results via email...")
-            send_email_with_results()
-        except Exception as e:
-            st.error(f"An error occurred while sending email: {e}")
+        send_email_with_results()
 
     # Button für den nächsten Block
     if st.button("Continue to Next Block"):
         st.session_state.block_index += 1
         st.session_state.can_play_sound = True  # Reset für den nächsten Block
-
-
