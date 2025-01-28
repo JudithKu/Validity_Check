@@ -178,47 +178,45 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
                         st.audio(audio_bytes, format="audio/wav")
                     st.session_state.can_play_sound = False
 
-        # Slider für Valence und Arousal anzeigen
-        if not st.session_state.can_play_sound:
-            valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
-            arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
+            if not st.session_state.can_play_sound:
+                # Slider für Valence und Arousal anzeigen
+                valence_image_path = os.path.join(os.path.dirname(__file__), "Valence_Sam.png")
+                arousal_image_path = os.path.join(os.path.dirname(__file__), "Arousal_Sam.png")
 
-            st.image(valence_image_path, caption="Valence Scale", width=300)
-            valence = st.slider("Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}")
+                st.image(valence_image_path, caption="Valence Scale", width=300)
+                valence = st.slider(
+                    "Valence (-1 negative, +1 positive)", -1.0, 1.0, 0.0, 0.25, key=f"valence_{st.session_state.sound_index}"
+                )
 
-            st.image(arousal_image_path, caption="Arousal Scale", width=300)
-            arousal = st.slider("Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}")
+                st.image(arousal_image_path, caption="Arousal Scale", width=300)
+                arousal = st.slider(
+                    "Arousal (-1 calm, +1 excited)", -1.0, 1.0, 0.0, 0.25, key=f"arousal_{st.session_state.sound_index}"
+                )
 
-            # Antwort absenden und zum nächsten Sound wechseln
-            if st.button("Submit Response"):
-                st.session_state.results.append([st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender])
-                st.session_state.sound_index += 1
-                st.session_state.current_sound = None
-                st.session_state.can_play_sound = True
+                # Antwort absenden und zum nächsten Sound wechseln
+                if st.button("Submit Response"):
+                    st.session_state.results.append(
+                        [st.session_state.current_sound, valence, arousal, st.session_state.age, st.session_state.gender]
+                    )
+                    st.session_state.sound_index += 1
+                    st.session_state.current_sound = None
+                    st.session_state.can_play_sound = True
 
-    # Nach Beendigung des Blocks
-    else:
-        st.write("You have completed the current block!")
-        save_results()
-
-        if st.button("Send Results via Email"):
-            try:
-                st.info("Sending results via email...")
-                send_email_with_results()
-            except Exception as e:
-                st.error(f"An error occurred while sending email: {e}")
-
-        if st.button("Continue to Next Block"):
-            st.session_state.block_index += 1
-
-
-else:
-    st.write("Experiment finished! Thank you for participating.")
+    # Block abgeschlossen: Ergebnisse anzeigen und Buttons anbieten
+    st.write("You have completed the current block!")
     save_results()
+
+    # Button für den E-Mail-Versand
     if st.button("Send Results via Email"):
         try:
-            st.info("Button clicked. Sending email...")  # Feedback, dass der Button erkannt wurde
+            st.info("Sending results via email...")
             send_email_with_results()
         except Exception as e:
-            st.error(f"An unexpected error occurred: {e}")  # Fehler direkt anzeigen
+            st.error(f"An error occurred while sending email: {e}")
+
+    # Button für den nächsten Block
+    if st.button("Continue to Next Block"):
+        st.session_state.block_index += 1
+        st.session_state.can_play_sound = True  # Reset für den nächsten Block
+
 
