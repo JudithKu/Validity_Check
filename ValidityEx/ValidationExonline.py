@@ -205,17 +205,12 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
 
     # Button für den E-Mail-Versand
     if st.button("Send Results via Email"):
-        try:
-            st.info("Sending results via email...")
-            send_email_with_results()
-        except Exception as e:
-            st.error(f"An error occurred while sending email: {e}")
+        send_email_with_results()
 
     # Button für den nächsten Block
     if st.button("Continue to Next Block"):
         st.session_state.block_index += 1
         st.session_state.can_play_sound = True  # Reset für den nächsten Block
-
 else:
     st.write("You have completed all blocks! Thank you for your participation.")
     save_results()
