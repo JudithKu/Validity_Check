@@ -209,7 +209,10 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
             st.session_state.can_play_sound = True  # Reset für den nächsten Block
 else:
     st.write("You have completed all blocks! Thank you for your participation.")
-    save_results()
+
+    # Ensure the last block's results are saved
+    if st.session_state.sound_index == len(st.session_state.sound_files):
+        save_results()
 
     if st.button("Send Final Results via Email", key="send_final_results_email"):
         send_email_with_results()
