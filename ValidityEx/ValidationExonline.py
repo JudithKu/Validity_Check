@@ -210,7 +210,7 @@ if st.session_state.block_index < len(st.session_state.sound_files) // block_siz
             st.session_state.block_index += 1
             st.session_state.can_play_sound = True  # Reset für den nächsten Block
 else:
-    st.write("You have completed all blocks! Thank you for your participation.")
+    st.write("You have completed all blocks! Thank you for your participation. Please don't forget to send the results via Email or download the results.")
 
     # Ensure the last block's results are saved
     if st.session_state.sound_index == len(st.session_state.sound_files):
