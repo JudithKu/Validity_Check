@@ -106,12 +106,12 @@ st.title("Wor(l)d of Emotions")
 st.subheader("Introduction")
 st.write(
     """ 
-    Thank you for participating! Your task is to listen to the fantasy words and classify them in terms of their “valence” and “arousal”.
+    Thank you for participating! Your task is to listen to fantasy words and classify them in terms of their “valence” and “arousal”.
 
     - When you press Play Sound sound bar appears and you can press the play button to listen to it
-    - You will be given a small picture where these valence and arousal are visualized.
+    - You will be given a small picture where valence and arousal are visualized.
     - Please move the slider to the appropriate value.
-    - Afterwards, please press Submit Response twice
+    - Afterwards, please press Submit Response twice.
 
     There are in total 120 words, but you have the option to cancel after every block of 20 words. Please make sure to send the results via E-mail. If you get an error please download the results.
     """
