@@ -107,9 +107,10 @@ st.subheader("Introduction")
 st.write(
     """ 
     Thank you for participating! Your task is to listen to fantasy words and rate them in terms of their “valence” and “arousal”.
+    
     You might be wondering what these terms mean. You'll get a visual explanation which should help.
     
-    - When you press "Play Sound" sound bar appears and you can press the play button to listen to it
+    - When you press "Play Sound" a sound bar appears and you can press the play button to listen to it
     - Please move the slider to the appropriate value.
     - Afterwards, please press "Submit Respons"e twice.
 
